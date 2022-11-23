@@ -8,7 +8,7 @@ def generate_entries(to_make : int = 1000):
     for i in range(to_make):
         first_nm = random.choice(first_names)
         last_nm = random.choice(last_names)
-        email = first_nm.replace(" ", "").lower() + last_nm.replace(" ", "").lower() + "@evilcorp.com"
+        email = first_nm.replace(" ", "").lower() + last_nm.replace(" ", "").lower() + str(i) + "@evilcorp.com"
         entries.append([i, first_nm, last_nm, email])
 
     return entries
