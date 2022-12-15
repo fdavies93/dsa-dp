@@ -21,7 +21,7 @@ def generate_entries(to_make : int = 1000):
 
     return entries
 
-employees = generate_entries(100)
+employees = generate_entries(10)
 hr_records = make_hr_records(employees)
 print(employees)
 print(hr_records)
