@@ -29,15 +29,15 @@ class SingleList:
         new_head = SingleLLNode(val, self.head)
         self.head = new_head
 
-    def print(self):
+    def __repr__(self):
         cur = self.head
         out = ""
         while cur != None:
             out += str(cur.data)
             cur = cur.next
             if cur != None:
-                out += ","
-        print(out)
+                out += " > "
+        return out
 
     def insert_after(self, insert_val : int, search_val : int):        
         point = self.find_by_val(search_val)
@@ -72,12 +72,12 @@ if __name__ == "__main__":
     ll = SingleList()
     for i in range(10):
         ll.insert_at_head(i)
-    ll.print()
+    print(ll)
     five = ll.find_by_val(5)
     print(five.data)
     ll.remove_value(5)
-    ll.print()
+    print(ll)
     ll.insert_after(5,6)
-    ll.print()
+    print(ll)
     tail = ll.get_tail()
     print(tail.data)
