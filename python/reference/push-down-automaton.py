@@ -92,7 +92,7 @@ class MathLexer:
                     if len(aggregate_val) > 0:
                         if aggregate_val[-1] == "." or aggregate_val[-1] == "-":
                             raise ValueError()
-                        tokens_out.append(Token(aggregate_val, LEX_TYPES.NUMBER))
+                        tokens_out.append(Token(float(aggregate_val), LEX_TYPES.NUMBER))
                     tokens_out.append(cur)
                     aggregate_val = ""
                     allowDot = True
@@ -107,7 +107,7 @@ class MathLexer:
         if aggregate_val[-1] not in {str(x) for x in range(10)}:
             raise ValueError
         
-        tokens_out.append(Token(aggregate_val, LEX_TYPES.NUMBER))
+        tokens_out.append(Token(float(aggregate_val), LEX_TYPES.NUMBER))
 
         return tokens_out
 
@@ -187,21 +187,52 @@ class MathParser:
                 next_list.append(combined_elements)
                 next_list.extend(cur_list[next_operation+2:])
                 cur_list = next_list
-                print(f"Operator {operation} found at index {next_operation}")
+                # print(f"Operator {operation} found at index {next_operation}")
                 next_operation = self.get_first_operator_index(cur_list, operation)                
         cur_list = cur_list[0]
         print(cur_list)
-
+        return cur_list
         # locate opening brackets; if found, locate closing brackets. also, push to stack
         # go through order of operations building up a tree
+
+    def evaluate(self, parse_tree : list):
+        # fetch / calculate left and right values
+        if isinstance(parse_tree[0], list):
+            left = self.evaluate(parse_tree[0])
+        elif isinstance(parse_tree[0], Token):
+            left = parse_tree[0].value
+        if isinstance(parse_tree[2], list):
+            right = self.evaluate(parse_tree[2])
+        elif isinstance(parse_tree[2], Token):
+            right = parse_tree[2].value
+        # evaluate the values wrt operator
+        operator = parse_tree[1].value
+        if operator == '*':
+            return left * right
+        elif operator == '/':
+            return left / right
+        elif operator == '+':
+            return left + right
+        elif operator == '-':
+            return left - right
 
 
 # NOTE: Lexer still allows putting 2 operators next to each other; this is fine for brackets 
 # but not valid for regular operations.
 
 lex = MathLexer()
-lex_list = lex.lex_string("10/5*5 + 10*10 - 5") # answer is 125 of course
-print(lex_list)
-
 parser = MathParser()
-parser.parse(lex_list)
+
+print("Welcome to Del's great calculator.")
+print("Enter an equation or type q to quit.")
+cmd = ''
+while (True):
+    cmd = input('> ')
+    if cmd == 'q':
+        break
+    lex_list = lex.lex_string(cmd) # answer is 125 of course
+    print(lex_list)
+    parse_tree = parser.parse(lex_list)
+    result = parser.evaluate(parse_tree)
+
+    print(result)
