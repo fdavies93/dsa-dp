@@ -6,18 +6,24 @@ class BstNode:
 
 
 class Bst:
-    def insert(value):
+    def __init__(self):
+        self.head = None
+
+    def insert(self, value):
         # Insert a node by value, depth-first search
         pass
 
-    def remove(value):
+    def remove(self, value):
         # Remove a node by value, depth-first search
         pass
 
-    def get(value) -> BstNode:
+    def get(self, value) -> BstNode:
         # Retrieve a node by value
         pass
 
-    def print():
+    def print(self):
         # Traverse the tree breadth-first and print out the results
         pass
+
+bnode.left = Node(1)
+bnode.right = Node(6)
