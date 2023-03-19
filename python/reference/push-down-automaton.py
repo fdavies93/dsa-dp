@@ -191,10 +191,39 @@ class MathParser:
         if len(tokens) == 0:
             return None
 
-        list_stack = []
+        before_stack : list[list] = []
         cur_list : list[Token] = deepcopy(tokens)
 
-        offset = 0
+        cur_i = 0
+        while cur_i < len(cur_list):
+            token = cur_list[cur_i]
+            if isinstance(token, Token) and token.value == '(':
+                before = cur_list[:cur_i]
+                if len(before) == 0:
+                    before = None
+                before_stack.append(before)
+                cur_list = cur_list[cur_i+1:]
+                cur_i = 0
+            elif isinstance(token, Token) and token.value == ')':
+                before = before_stack.pop()
+                if before == None:
+                    before = []
+                # print(f"Before: {before}")
+                inner = self.parse_inner(cur_list[:cur_i])
+                # print(f"Inner: {inner}")
+                after = cur_list[cur_i+1:]
+                # print(f"After: {after}")
+                cur_list = before
+                cur_list.append(inner)
+                cur_list.extend(after)
+                cur_i = 0
+            else:
+                cur_i += 1
+
+        print(cur_list)
+        return self.parse_inner(cur_list)
+        
+
         # find the innermost bracket and reduce working list to only the contents of that bracket
         cur_open = self.get_first_operator_index(cur_list, "(")
         cur_close = self.get_first_operator_index(cur_list, ")")
@@ -205,6 +234,12 @@ class MathParser:
                 # No closing brace!
                 raise ValueError()
             
+            # basic idea behind parsing brackets 
+            # while you encounter ( and no ):
+            # push everything to the left of ( to a stack of befores
+            # when you encounter )
+            # start pushing to a stack of afters
+
             next_open = self.get_first_operator_index(cur_list[cur_open+1:], "(")
             if next_open != None:
                 # adjust for the slice changing index
