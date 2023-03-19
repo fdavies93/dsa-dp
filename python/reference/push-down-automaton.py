@@ -67,8 +67,9 @@ class MathLexer:
         tokens_out = []
         cur = tokens[index]
         # first set of tokens must evaluate to number
-        if not (cur.type == LEX_TYPES.NUMBER or (cur.type == LEX_TYPES.OPERATOR and (cur.value == "." or cur.value == "-"))):
-            raise ValueError() 
+        # amend so that it's first set of tokens AFTER OPENING BRACES later
+        if not (cur.type == LEX_TYPES.NUMBER or (cur.type == LEX_TYPES.OPERATOR and (cur.value == "." or cur.value == "-")) or cur.value == "("):
+            raise ValueError()
 
         while index < len(tokens):
             cur = tokens[index]
@@ -103,11 +104,12 @@ class MathLexer:
                 prevWasNumber = True
             index += 1
         
-        # must end with number
-        if aggregate_val[-1] not in {str(x) for x in range(10)}:
+        # must end with number or bracket
+        if not tokens_out[-1].value == ')' and aggregate_val[-1] not in {str(x) for x in range(10)}:
             raise ValueError
         
-        tokens_out.append(Token(float(aggregate_val), LEX_TYPES.NUMBER))
+        if len(aggregate_val) > 0:
+            tokens_out.append(Token(float(aggregate_val), LEX_TYPES.NUMBER))
 
         return tokens_out
 
@@ -158,25 +160,18 @@ class State(IntEnum):
 
 class MathParser:
 
+    def __init__(self):
+        self.operation_precedence = ['/','*','+','-']
+
     def get_first_operator_index(self, tokens : list[Union[Token, list]], operator : str):
         for i, token in enumerate(tokens):
             if isinstance(token, Token) and token.value == operator:
                 return i
         return None
-
-    def parse(self, tokens: list[Token]):
-        if len(tokens) == 0:
-            return None
-
-        root_node = None
-        operation_precedence = ['/','*','+','-']
-
-        min_i = 0
-        max_i = len(tokens)
-
-        cur_list : list[Token] = deepcopy(tokens)
-
-        for operation in operation_precedence:
+    
+    def parse_inner(self, tokens: list[Token]):
+        cur_list = deepcopy(tokens)
+        for operation in self.operation_precedence:
             # get the next operation of this type in the list
             next_operation = self.get_first_operator_index(cur_list, operation)
             while next_operation != None:
@@ -188,8 +183,50 @@ class MathParser:
                 next_list.extend(cur_list[next_operation+2:])
                 cur_list = next_list
                 # print(f"Operator {operation} found at index {next_operation}")
-                next_operation = self.get_first_operator_index(cur_list, operation)                
-        cur_list = cur_list[0]
+                next_operation = self.get_first_operator_index(cur_list, operation)
+        
+        return cur_list[0]
+
+    def parse(self, tokens: list[Token]):
+        if len(tokens) == 0:
+            return None
+
+        list_stack = []
+        cur_list : list[Token] = deepcopy(tokens)
+
+        offset = 0
+        # find the innermost bracket and reduce working list to only the contents of that bracket
+        cur_open = self.get_first_operator_index(cur_list, "(")
+        cur_close = self.get_first_operator_index(cur_list, ")")
+        print(f"Open: {cur_open}, Close: {cur_close}")
+        # this should work now but only with 1-deep brackets
+        while cur_open != None:
+            if cur_close == None:
+                # No closing brace!
+                raise ValueError()
+            
+            next_open = self.get_first_operator_index(cur_list[cur_open+1:], "(")
+            if next_open != None:
+                # adjust for the slice changing index
+                next_open += (cur_open + 1)
+
+            if next_open is None or cur_close < next_open:
+                # we're at the innermost region; parse it, not including brackets
+                print(cur_list)
+                print(cur_list[cur_open+1:cur_close])
+                inner = self.parse_inner(cur_list[cur_open+1:cur_close])
+                next_list = cur_list[:cur_open]
+                next_list.append(inner)
+                next_list.extend(cur_list[cur_close+1:])
+                cur_list = next_list
+                print(cur_list)
+                # insert into the outer list?
+            cur_open = self.get_first_operator_index(cur_list, "(")
+            cur_close = self.get_first_operator_index(cur_list, ")")
+
+
+        # parse the outmost layer of the equation
+        cur_list = self.parse_inner(cur_list)
         print(cur_list)
         return cur_list
         # locate opening brackets; if found, locate closing brackets. also, push to stack
