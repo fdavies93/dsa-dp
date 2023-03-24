@@ -222,50 +222,6 @@ class MathParser:
 
         print(cur_list)
         return self.parse_inner(cur_list)
-        
-
-        # find the innermost bracket and reduce working list to only the contents of that bracket
-        cur_open = self.get_first_operator_index(cur_list, "(")
-        cur_close = self.get_first_operator_index(cur_list, ")")
-        print(f"Open: {cur_open}, Close: {cur_close}")
-        # this should work now but only with 1-deep brackets
-        while cur_open != None:
-            if cur_close == None:
-                # No closing brace!
-                raise ValueError()
-            
-            # basic idea behind parsing brackets 
-            # while you encounter ( and no ):
-            # push everything to the left of ( to a stack of befores
-            # when you encounter )
-            # start pushing to a stack of afters
-
-            next_open = self.get_first_operator_index(cur_list[cur_open+1:], "(")
-            if next_open != None:
-                # adjust for the slice changing index
-                next_open += (cur_open + 1)
-
-            if next_open is None or cur_close < next_open:
-                # we're at the innermost region; parse it, not including brackets
-                print(cur_list)
-                print(cur_list[cur_open+1:cur_close])
-                inner = self.parse_inner(cur_list[cur_open+1:cur_close])
-                next_list = cur_list[:cur_open]
-                next_list.append(inner)
-                next_list.extend(cur_list[cur_close+1:])
-                cur_list = next_list
-                print(cur_list)
-                # insert into the outer list?
-            cur_open = self.get_first_operator_index(cur_list, "(")
-            cur_close = self.get_first_operator_index(cur_list, ")")
-
-
-        # parse the outmost layer of the equation
-        cur_list = self.parse_inner(cur_list)
-        print(cur_list)
-        return cur_list
-        # locate opening brackets; if found, locate closing brackets. also, push to stack
-        # go through order of operations building up a tree
 
     def evaluate(self, parse_tree : list):
         # fetch / calculate left and right values
