@@ -8,9 +8,11 @@ class BstNode:
         self.right : Union[BstNode, None] = None
 
 class AvlTree:
-    def __init__(self, autobalance):
+    def __init__(self, values = [], autobalance = True):
         self.head = None
-        self.autobalance = True
+        self.autobalance = autobalance
+        for val in values:
+            self.insert(val)
 
     def insert(self, value):
         # Insert a node by value, depth-first search
@@ -212,8 +214,7 @@ def setup_complex_tree(autobalance = False):
     return tree
 
 def l_test():
-    tree = setup_simple_tree()
-
+    tree = AvlTree([3,1,5,6,7,-1,-2], False)
     tree.head.right = tree.rotate_l_at(tree.head.right)
 
     #     3
@@ -223,7 +224,7 @@ def l_test():
     tree.print()
 
 def r_test():
-    tree = setup_simple_tree()
+    tree = AvlTree([3,1,5,6,7,-1,-2], False)
     tree.head.left = tree.rotate_r_at(tree.head.left)
 
     #      3
@@ -234,7 +235,7 @@ def r_test():
     tree.print()
 
 def rl_test():
-    tree = setup_complex_tree()
+    tree = AvlTree([3,1,5,7,6,-1,0], False)
     tree.head.right = tree.rotate_rl_at(tree.head.right)
     #       3
     #     1   6
@@ -243,7 +244,7 @@ def rl_test():
     tree.print()
 
 def lr_test():
-    tree = setup_complex_tree()
+    tree = AvlTree([3,1,5,7,6,-1,0], False)
     tree.head.left = tree.rotate_lr_at(tree.head.left)
     #       3
     #     0   5
@@ -252,7 +253,7 @@ def lr_test():
     tree.print()
 
 def autobalance_test():
-    tree = setup_simple_tree(True)
+    tree = AvlTree([3,1,5,6,7,-1,-2], True)
     #       3
     #     -1   6
     #   -2  1 5  7
@@ -261,4 +262,4 @@ def autobalance_test():
     tree.remove(-2)
     tree.print()
 
-autobalance_test()
+lr_test()
