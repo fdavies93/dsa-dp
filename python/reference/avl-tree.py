@@ -192,27 +192,6 @@ class AvlTree:
                 return AvlTree.rotate_r_at(node)
         return node
 
-def setup_simple_tree(autobalance = False):
-    tree = AvlTree(autobalance)
-    for val in [3,1,5,6,7,-1,-2]:
-        tree.insert(val)
-    #       3
-    #     1   5
-    #   -1      6
-    # -2          7
-    return tree
-
-def setup_complex_tree(autobalance = False):
-    tree = AvlTree(autobalance)
-    for val in [3,1,5,7,6,-1,0]:
-        # print(val)
-        tree.insert(val)
-    #       3
-    #     1   5
-    #   -1      7
-    #     0   6
-    return tree
-
 def l_test():
     tree = AvlTree([3,1,5,6,7,-1,-2], False)
     tree.head.right = tree.rotate_l_at(tree.head.right)
