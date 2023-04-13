@@ -1,10 +1,11 @@
 from collections import deque
+from typing import Union
 
 class BstNode:
     def __init__(self, value: int):
         self.value = value
-        self.left = None
-        self.right = None
+        self.left : Union[BstNode, None] = None
+        self.right : Union[BstNode, None] = None
 
 
 class Bst:
@@ -32,11 +33,63 @@ class Bst:
 
     def remove(self, value):
         # Remove a node by value, depth-first search
-        pass
+        prev_node = None
+        prev_left = False
+        cur_node : Union[BstNode, None] = self.head
+        while cur_node != None:
+            if cur_node.value == value:
+                # remove the node
+                # if two children, swap VALUE of rightmost leaf of left subtree with current node
+                # then delete rightmost node of left subtree, recursing as needed
+                if cur_node.left is not None and cur_node.right is not None:
+                    to_promote = cur_node.left
+                    while to_promote.right != None:
+                        to_promote = to_promote.right
+                    temp = to_promote.value
+                    self.remove(temp)
+                    old_value = cur_node.value
+                    cur_node.value = temp
+                    return BstNode(old_value)
+                # as the others are simple, non-recursive cases, we can simplify logic
+                to_promote : Union[BstNode, None] = None
+                # if no children, just remove it
+                # we don't need an explicit case for this, just leave to_promote as None
+                # if one child, promote the left-hand child
+                if cur_node.left is None and cur_node.right is not None:
+                    to_promote = cur_node.right
+                elif cur_node.left is not None and cur_node.right is None:
+                    to_promote = cur_node.left
+                # finally shift nodes as appropriate
+                if cur_node == self.head:
+                    self.head = to_promote
+                elif prev_left:
+                    prev_node.left = to_promote
+                elif not prev_left:
+                    prev_node.right = to_promote
+                return BstNode(cur_node.value)
+            prev_node = cur_node
+            if cur_node.value >= value:
+                # go left
+                cur_node = cur_node.left
+                prev_left = True
+            elif cur_node.value < value:
+                # go right
+                cur_node = cur_node.right
+                prev_left = False
+
+        return None
 
     def get(self, value) -> BstNode:
         # Retrieve a node by value
-        pass
+        cur_node = self.head
+        while cur_node != None:
+            if cur_node.value == value:
+                return cur_node
+            elif cur_node.value >= value:
+                cur_node = cur_node.left
+            elif cur_node.value < value:
+                cur_node = cur_node.right
+        return cur_node # i.e. None
 
     def print(self):
         # Traverse the tree breadth-first and print out the results
@@ -59,5 +112,20 @@ tree.insert(5)
 tree.insert(6)
 tree.insert(7)
 tree.insert(-1)
+
+#     3
+#   1   5
+# -1      6
+#           7
+
+tree.print()
+
+tree.remove(3)
+tree.remove(1)
+tree.remove(5)
+tree.remove(-1)
+tree.remove(6)
+tree.remove(7)
+tree.remove(0)
 
 tree.print()

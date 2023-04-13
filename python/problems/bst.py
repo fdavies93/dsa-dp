@@ -25,5 +25,15 @@ class Bst:
         # Traverse the tree breadth-first and print out the results
         pass
 
-bnode.left = Node(1)
-bnode.right = Node(6)
+#     3
+#   1   5
+# -1   4  6
+#        7  8
+
+tree = Bst()
+tree.insert(3)
+tree.insert(1)
+tree.insert(5)
+tree.insert(6)
+tree.insert(7)
+tree.insert(-1)
