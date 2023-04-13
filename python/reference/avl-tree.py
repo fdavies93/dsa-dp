@@ -7,10 +7,10 @@ class BstNode:
         self.left : Union[BstNode, None] = None
         self.right : Union[BstNode, None] = None
 
-
-class Bst:
-    def __init__(self):
+class AvlTree:
+    def __init__(self, autobalance):
         self.head = None
+        self.autobalance = True
 
     def insert(self, value):
         # Insert a node by value, depth-first search
@@ -18,7 +18,9 @@ class Bst:
             self.head = BstNode(value)
             return
         cur_node = self.head
+        visited = [] # maintain a stack to rebalance back up to root
         while cur_node != None:
+            visited.append(cur_node)
             if cur_node.value >= value:
                 next_node = cur_node.left
                 if next_node is None:
@@ -29,6 +31,17 @@ class Bst:
                 # insert right
                 if next_node is None:
                     cur_node.right = BstNode(value)
+            
+            while self.autobalance and next_node is None and len(visited) > 0:
+                prev = visited.pop()
+                if len(visited) == 0:
+                    # we're at head
+                    self.head = AvlTree.rebalance(prev)
+                elif visited[-1].left == prev:
+                    visited[-1].left = AvlTree.rebalance(prev)
+                elif visited[-1].right == prev:
+                    visited[-1].right = AvlTree.rebalance(prev)
+                        
             cur_node = next_node
 
     def remove(self, value):
@@ -105,35 +118,129 @@ class Bst:
             if cur_node.right is not None:
                 next_nodes.append(cur_node.right)
 
-    def balance(self, node : BstNode):
-        return self.height(node.right) - self.height(node.left)
+    @classmethod
+    def balance(cls, node : BstNode):
+        return AvlTree.height(node.right) - AvlTree.height(node.left)
     
-    def height(self, node : BstNode):
+    @classmethod
+    def height(cls, node : BstNode):
         if node is None:
             return 0
-        return max(self.height(node.left), self.height(node.right)) + 1
+        return max(AvlTree.height(node.left), AvlTree.height(node.right)) + 1
 
-tree = Bst()
-tree.insert(3)
-tree.insert(1)
-tree.insert(5)
-tree.insert(6)
-tree.insert(7)
-tree.insert(-1)
+    @classmethod
+    def rotate_l_at(cls, node : BstNode):
+        new_parent = node.right
+        old_left = new_parent.left
+        new_parent.left = node 
+        node.right = old_left
+        return new_parent
 
-#     3
-#   1   5
-# -1      6
-#           7
+    @classmethod
+    def rotate_lr_at(cls, node : BstNode):
+        node.left = AvlTree.rotate_l_at(node.left)
+        return AvlTree.rotate_r_at(node)
 
-tree.print()
+    @classmethod
+    def rotate_r_at(cls, node : BstNode):
+        new_parent = node.left
+        old_right = new_parent.right
+        new_parent.right = node
+        node.left = old_right
+        return new_parent
+    
+    @classmethod
+    def rotate_rl_at(cls, node : BstNode):
+        node.right = AvlTree.rotate_r_at(node.right)
+        return AvlTree.rotate_l_at(node)
+    
+    @classmethod
+    def rebalance(cls, node : BstNode):
+        if AvlTree.balance(node) > 1:
+            # right subtree is too tall
+            if AvlTree.height(node.right.right) > AvlTree.height(node.right.left):
+                # right right
+                # fix right subtree w left rotation
+                return AvlTree.rotate_l_at(node)
+            else:
+                # right left
+                # fix left subtree w right-left rotation
+                return AvlTree.rotate_rl_at(node)
+        elif AvlTree.balance(node) < -1:
+            # left subtree is too tall
+            if AvlTree.height(node.left.right) > AvlTree.height(node.left.left):
+                # left right
+                # fix left subtree w left-right rotation
+                return AvlTree.rotate_lr_at(node)
+            else:
+                # left left
+                # fix right subtree w right rotation
+                return AvlTree.rotate_r_at(node)
+        return node
 
-tree.remove(3)
-tree.remove(1)
-tree.remove(5)
-tree.remove(-1)
-tree.remove(6)
-tree.remove(7)
-tree.remove(0)
+def setup_simple_tree(autobalance = False):
+    tree = AvlTree(autobalance)
+    for val in [3,1,5,6,7,-1,-2]:
+        tree.insert(val)
+    #       3
+    #     1   5
+    #   -1      6
+    # -2          7
+    return tree
 
-tree.print()
+def setup_complex_tree(autobalance = False):
+    tree = AvlTree(autobalance)
+    for val in [3,1,5,7,6,-1,0]:
+        # print(val)
+        tree.insert(val)
+    #       3
+    #     1   5
+    #   -1      7
+    #     0   6
+    return tree
+
+def l_test():
+    tree = setup_simple_tree()
+
+    tree.head.right = tree.rotate_l_at(tree.head.right)
+
+    #     3
+    #   1   6
+    # -1   5  7
+
+    tree.print()
+
+def r_test():
+    tree = setup_simple_tree()
+    tree.head.left = tree.rotate_r_at(tree.head.left)
+
+    #      3
+    #   -1    5
+    # -2  1     6
+    #             7
+
+    tree.print()
+
+def rl_test():
+    tree = setup_complex_tree()
+    tree.head.right = tree.rotate_rl_at(tree.head.right)
+    #       3
+    #     1   6
+    #   -1   5  7
+    #     0   
+    tree.print()
+
+def lr_test():
+    tree = setup_complex_tree()
+    tree.head.left = tree.rotate_lr_at(tree.head.left)
+    #       3
+    #     0   5
+    #   -1  1   7
+    #          6
+    tree.print()
+
+def autobalance_test():
+    tree = setup_simple_tree(True)
+    tree.print()
+
+autobalance_test()
