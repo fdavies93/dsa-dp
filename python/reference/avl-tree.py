@@ -49,7 +49,9 @@ class AvlTree:
         prev_node = None
         prev_left = False
         cur_node : Union[BstNode, None] = self.head
+        visited = []
         while cur_node != None:
+            visited.append(cur_node)
             if cur_node.value == value:
                 # remove the node
                 # if two children, swap VALUE of rightmost leaf of left subtree with current node
@@ -79,6 +81,17 @@ class AvlTree:
                     prev_node.left = to_promote
                 elif not prev_left:
                     prev_node.right = to_promote
+
+                while self.autobalance and len(visited) > 0:
+                    prev = visited.pop()
+                    if len(visited) == 0:
+                        # we're at head
+                        self.head = AvlTree.rebalance(prev)
+                    elif visited[-1].left == prev:
+                        visited[-1].left = AvlTree.rebalance(prev)
+                    elif visited[-1].right == prev:
+                        visited[-1].right = AvlTree.rebalance(prev)
+
                 return BstNode(cur_node.value)
             prev_node = cur_node
             if cur_node.value >= value:
@@ -89,7 +102,6 @@ class AvlTree:
                 # go right
                 cur_node = cur_node.right
                 prev_left = False
-
         return None
 
     def get(self, value) -> BstNode:
@@ -241,6 +253,12 @@ def lr_test():
 
 def autobalance_test():
     tree = setup_simple_tree(True)
+    #       3
+    #     -1   6
+    #   -2  1 5  7
+    tree.remove(1)
+    tree.remove(-1)
+    tree.remove(-2)
     tree.print()
 
 autobalance_test()
