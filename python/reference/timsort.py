@@ -2,9 +2,7 @@ from random import randint
 from math import floor, ceil
 
 # theoretically, insertion sort is optimal for arrays of 12 or fewer elements
-# merge sort prefers larger powers of 2
-# therefore max run size is set to 8
-MAX_RUN_SIZE = 8
+MAX_RUN_SIZE = 12
 
 def get_run_length(array):
     run_length = len(array)
